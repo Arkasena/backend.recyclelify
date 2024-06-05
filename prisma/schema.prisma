@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  PARTNER
+  COLLABORATOR
+}
+
+enum TransactionStatus {
+  PROCESSED
+  APPROVED_BY_PARTNER
+  APPROVED_BY_COLLABORATOR
+  APPROVED
+  FINISHED
+  FAILED
+  REJECTED
+}
+
+enum TransactionHandover {
+  PICKUP
+  SELFDELIVERY
+}
+
+model User {
+  id                         Int                         @id @default(autoincrement())
+  username                   String                      @unique
+  name                       String                      @db.VarChar(64)
+  description                String?                     @db.VarChar(256)
+  phoneNumber                String                      @map("phone_number") @db.VarChar(16)
+  email                      String                      @unique
+  password                   String                      @db.VarChar(32)
+  address                    String                      @db.VarChar(128)
+  photo                      String?                     @db.VarChar(256)
+  website                    String?                     @db.VarChar(32)
+  role                       UserRole                    @default(COLLABORATOR)
+  createdAt                  DateTime                    @default(now()) @map("created_at")
+  updatedAt                  DateTime                    @updatedAt @map("updated_at")
+  products                   Product[]
+  partnerTransactions        Transaction[]               @relation("transaction_partner")
+  collaboratorTransactions   Transaction[]               @relation("transaction_collaborator")
+  transactionAcceptanceRules TransactionAcceptanceRule[]
+
+  @@map("users")
+}
+
+model Product {
+  id                Int               @id @default(autoincrement())
+  partner           User              @relation(fields: [partnerId], references: [id])
+  partnerId         Int               @map("partner_id")
+  name              String            @db.VarChar(32)
+  description       String            @db.VarChar(256)
+  price             Int
+  photo             String            @db.VarChar(256)
+  link              String            @db.VarChar(256)
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+  productCategories ProductCategory[]
+
+  @@map("products")
+}
+
+model ProductCategory {
+  product    Product            @relation(fields: [productId], references: [id])
+  productId  Int                @map("product_id")
+  category   CategoryForProduct @relation(fields: [categoryId], references: [id])
+  categoryId Int                @map("category_id")
+
+  @@id([productId, categoryId])
+  @@map("products_categories")
+}
+
+model CategoryForProduct {
+  id              Int               @id @default(autoincrement())
+  name            String            @unique @db.VarChar(32)
+  productCategory ProductCategory[]
+
+  @@map("categories_for_products")
+}
+
+model Transaction {
+  id              Int                 @id @default(autoincrement())
+  partner         User                @relation("transaction_partner", fields: [partnerId], references: [id])
+  partnerId       Int                 @map("partner_id")
+  collaborator    User                @relation("transaction_collaborator", fields: [collaboratorId], references: [id])
+  collaboratorId  Int                 @map("collaborator_id")
+  status          TransactionStatus   @default(PROCESSED)
+  note            String?             @db.VarChar(256)
+  photo           String              @db.VarChar(256)
+  weight          Decimal
+  plastic         Plastic             @relation(fields: [plasticId], references: [id])
+  plasticId       Int                 @map("plastic_id")
+  handoverType    TransactionHandover @map("handover_type")
+  handoverFee     Int                 @default(0) @map("handover_fee")
+  transactionTime DateTime?           @map("transaction_time")
+  createdAt       DateTime            @default(now()) @map("created_at")
+  updatedAt       DateTime            @updatedAt @map("updated_at")
+
+  @@map("transactions")
+}
+
+model TransactionAcceptanceRule {
+  partner                  User     @relation(fields: [partnerId], references: [id])
+  partnerId                Int      @map("partner_id")
+  plastic                  Plastic  @relation(fields: [plasticId], references: [id])
+  plasticId                Int      @map("plastic_id")
+  pricePerKilogram         Int      @map("price_per_kilogram")
+  minimumTransactionWeight Decimal  @map("minimum_transaction_weight")
+  createdAt                DateTime @default(now()) @map("created_at")
+  updatedAt                DateTime @updatedAt @map("updated_at")
+
+  @@id([partnerId, plasticId])
+  @@map("plastic_acceptance_rules")
+}
+
+model Plastic {
+  id                         Int                         @id @default(autoincrement())
+  name                       String                      @unique @db.VarChar(16)
+  transactions               Transaction[]
+  transactionAcceptanceRules TransactionAcceptanceRule[]
+
+  @@map("plastics")
+}
