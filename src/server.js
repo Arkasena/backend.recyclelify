@@ -1,5 +1,5 @@
 const app = require("./app");
-const { prisma } = require("./utilities/prisma.utility");
+const prismaClient = require("./utilities/prismaClient.utility");
 
 const port = process.env.PORT || 3000;
 
@@ -12,7 +12,7 @@ process.on("unhandledRejection", async (reason, promise) => {
   console.error("reason:", reason);
   console.error("at:", promise);
   console.groupEnd();
-  await prisma.$disconnect();
+  await prismaClient.$disconnect();
   process.exit(1);
 });
 
@@ -21,6 +21,6 @@ process.on("uncaughtException", async (error, origin) => {
   console.error("origin:", origin);
   console.error("error:", error);
   console.groupEnd();
-  await prisma.$disconnect();
+  await prismaClient.$disconnect();
   process.exit(1);
 });
