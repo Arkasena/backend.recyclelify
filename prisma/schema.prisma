@@ -36,11 +36,11 @@ enum TransactionHandover {
 
 model User {
   id                       Int              @id @default(autoincrement())
-  username                 String           @unique
+  username                 String           @unique @db.VarChar(32)
   name                     String           @db.VarChar(64)
   description              String?          @db.VarChar(256)
   phoneNumber              String           @map("phone_number") @db.VarChar(16)
-  email                    String           @unique
+  email                    String           @unique @db.VarChar(320)
   password                 String           @db.VarChar(32)
   address                  String           @db.VarChar(128)
   photo                    String?          @db.VarChar(256)
@@ -111,7 +111,7 @@ model Transaction {
   partnerId        Int                 @map("partner_id")
   collaborator     User                @relation("transaction_collaborator", fields: [collaboratorId], references: [id])
   collaboratorId   Int                 @map("collaborator_id")
-  status           TransactionStatus   @default(PROCESSED)
+  status           TransactionStatus   @default(SUBMITTED)
   note             String?             @db.VarChar(256)
   photo            String              @db.VarChar(256)
   weight           Decimal
