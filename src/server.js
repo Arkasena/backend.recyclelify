@@ -24,3 +24,5 @@ process.on("uncaughtException", async (error, origin) => {
   await prismaClient.$disconnect();
   process.exit(1);
 });
+
+module.exports = app;
