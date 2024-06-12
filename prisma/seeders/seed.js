@@ -1,11 +1,11 @@
 const { PrismaClient } = require("@prisma/client");
-const users = require("./data/users.js");
-const products = require("./data/products.js");
-const productsCategories = require("./data/productsCategories.js");
-const categoriesForProducts = require("./data/categoriesForProducts.js");
-const transactions = require("./data/transactions.js");
-const transactionsAcceptanceRules = require("./data/transactionsAcceptanceRules.js");
-const plastics = require("./data/plastics.js");
+const users = require("./data/users.seeder.js");
+const products = require("./data/products.seeder.js");
+const productsCategories = require("./data/productsCategories.seeder.js");
+const categoriesForProducts = require("./data/categoriesForProducts.seeder.js");
+const transactions = require("./data/transactions.seeder.js");
+const acceptanceRules = require("./data/acceptanceRules.seeder.js");
+const plastics = require("./data/plastics.seeder.js");
 
 const prisma = new PrismaClient();
 
@@ -14,7 +14,6 @@ async function seed() {
     data: users,
     skipDuplicates: true,
   });
-
   await prisma.categoryForProduct.createMany({
     data: categoriesForProducts,
     skipDuplicates: true,
@@ -27,7 +26,6 @@ async function seed() {
     data: productsCategories,
     skipDuplicates: true,
   });
-
   await prisma.plastic.createMany({
     data: plastics,
     skipDuplicates: true,
@@ -36,8 +34,8 @@ async function seed() {
     data: transactions,
     skipDuplicates: true,
   });
-  await prisma.transactionAcceptanceRule.createMany({
-    data: transactionsAcceptanceRules,
+  await prisma.acceptanceRule.createMany({
+    data: acceptanceRules,
     skipDuplicates: true,
   });
 }
