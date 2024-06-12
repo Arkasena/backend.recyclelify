@@ -35,23 +35,23 @@ enum TransactionHandover {
 }
 
 model User {
-  id                       Int              @id @default(autoincrement())
-  username                 String           @unique @db.VarChar(32)
-  name                     String           @db.VarChar(64)
-  description              String?          @db.VarChar(256)
-  phoneNumber              String           @map("phone_number") @db.VarChar(16)
-  email                    String           @unique @db.VarChar(320)
-  password                 String           @db.VarChar(32)
-  address                  String           @db.VarChar(128)
-  photo                    String?          @db.VarChar(256)
-  website                  String?          @db.VarChar(32)
-  role                     UserRole         @default(COLLABORATOR)
-  createdAt                DateTime         @default(now()) @map("created_at")
-  updatedAt                DateTime         @updatedAt @map("updated_at")
-  products                 Product[]
-  acceptanceRules          AcceptanceRule[]
-  partnerTransactions      Transaction[]    @relation("transaction_partner")
-  collaboratorTransactions Transaction[]    @relation("transaction_collaborator")
+  id                 Int              @id @default(autoincrement())
+  username           String           @unique @db.VarChar(32)
+  name               String           @db.VarChar(64)
+  description        String?          @db.VarChar(256)
+  phoneNumber        String           @map("phone_number") @db.VarChar(16)
+  email              String           @unique @db.VarChar(320)
+  password           String           @db.VarChar(32)
+  address            String           @db.VarChar(128)
+  photo              String?          @db.VarChar(256)
+  website            String?          @db.VarChar(32)
+  role               UserRole         @default(COLLABORATOR)
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  products           Product[]
+  acceptanceRules    AcceptanceRule[]
+  sellerTransactions Transaction[]    @relation("transaction_seller")
+  buyerTransactions  Transaction[]    @relation("transaction_buyer")
 
   @@map("users")
 }
@@ -107,10 +107,10 @@ model AcceptanceRule {
 
 model Transaction {
   id               Int                 @id @default(autoincrement())
-  partner          User                @relation("transaction_partner", fields: [partnerId], references: [id])
-  partnerId        Int                 @map("partner_id")
-  collaborator     User                @relation("transaction_collaborator", fields: [collaboratorId], references: [id])
-  collaboratorId   Int                 @map("collaborator_id")
+  seller           User                @relation("transaction_seller", fields: [sellerId], references: [id])
+  sellerId         Int                 @map("seller_id")
+  buyer            User                @relation("transaction_buyer", fields: [buyerId], references: [id])
+  buyerId          Int                 @map("buyer_id")
   status           TransactionStatus   @default(SUBMITTED)
   note             String?             @db.VarChar(256)
   photo            String              @db.VarChar(256)
