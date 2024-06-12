@@ -1,7 +1,7 @@
 const transactions = [
   {
-    partnerId: 2,
-    collaboratorId: 22,
+    sellerId: 2,
+    buyerId: 22,
     status: "SUBMITTED",
     note: "",
     photo:
@@ -14,8 +14,8 @@ const transactions = [
     transactionTime: null,
   },
   {
-    partnerId: 3,
-    collaboratorId: 23,
+    sellerId: 3,
+    buyerId: 23,
     status: "FINISHED",
     note: "",
     photo:
@@ -28,8 +28,8 @@ const transactions = [
     transactionTime: "2024-06-10T10:30:00.477Z",
   },
   {
-    partnerId: 3,
-    collaboratorId: 23,
+    sellerId: 3,
+    buyerId: 23,
     status: "PROCESSED",
     note: "",
     photo:
@@ -42,8 +42,8 @@ const transactions = [
     transactionTime: "2024-06-12T10:00:00.477Z",
   },
   {
-    partnerId: 4,
-    collaboratorId: 24,
+    sellerId: 4,
+    buyerId: 24,
     status: "REJECTED_BY_PARTNER",
     note: "Tidak memenuhi berat minimum penerimaan plastik",
     photo: "https://waste4change.com/blog/wp-content/uploads/plastic-bags-1.jpg",
