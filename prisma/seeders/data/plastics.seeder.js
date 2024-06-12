@@ -1,15 +1,15 @@
 const plastics = [
   {
-    name: "PETE/PET",
+    name: "PETE",
   },
   {
-    name: "HDPE/PE-HD",
+    name: "HDPE",
   },
   {
-    name: "LDPE/PE-LD",
+    name: "LDPE",
   },
   {
-    name: "PVC/V",
+    name: "PVC",
   },
   {
     name: "PP",
