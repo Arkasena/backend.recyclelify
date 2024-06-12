@@ -1,18 +1,18 @@
 const categoriesForProducts = [
   {
-    name: "Accessories",
+    name: "Aksesoris",
   },
   {
-    name: "Decoration",
+    name: "Dekorasi",
   },
   {
-    name: "Fashion",
+    name: "Busana",
   },
   {
-    name: "Furniture",
+    name: "Furnitur",
   },
   {
-    name: "Other",
+    name: "Lainnya",
   },
 ];
 

@@ -14,14 +14,19 @@ enum UserRole {
   COLLABORATOR
 }
 
+enum AcceptanceRuleStatus {
+  ACTIVE
+  INACTIVE
+}
+
 enum TransactionStatus {
-  PROCESSED
-  APPROVED_BY_PARTNER
-  APPROVED_BY_COLLABORATOR
+  SUBMITTED
   APPROVED
-  FINISHED
+  PROCESSED
+  REJECTED_BY_PARTNER
+  REJECTED_BY_COLLABORATOR
   FAILED
-  REJECTED
+  FINISHED
 }
 
 enum TransactionHandover {
@@ -30,23 +35,23 @@ enum TransactionHandover {
 }
 
 model User {
-  id                         Int                         @id @default(autoincrement())
-  username                   String                      @unique
-  name                       String                      @db.VarChar(64)
-  description                String?                     @db.VarChar(256)
-  phoneNumber                String                      @map("phone_number") @db.VarChar(16)
-  email                      String                      @unique
-  password                   String                      @db.VarChar(32)
-  address                    String                      @db.VarChar(128)
-  photo                      String?                     @db.VarChar(256)
-  website                    String?                     @db.VarChar(32)
-  role                       UserRole                    @default(COLLABORATOR)
-  createdAt                  DateTime                    @default(now()) @map("created_at")
-  updatedAt                  DateTime                    @updatedAt @map("updated_at")
-  products                   Product[]
-  partnerTransactions        Transaction[]               @relation("transaction_partner")
-  collaboratorTransactions   Transaction[]               @relation("transaction_collaborator")
-  transactionAcceptanceRules TransactionAcceptanceRule[]
+  id                 Int              @id @default(autoincrement())
+  username           String           @unique @db.VarChar(32)
+  name               String           @db.VarChar(64)
+  description        String?          @db.VarChar(256)
+  phoneNumber        String           @map("phone_number") @db.VarChar(16)
+  email              String           @unique @db.VarChar(320)
+  password           String           @db.VarChar(32)
+  address            String           @db.VarChar(128)
+  photo              String?          @db.VarChar(256)
+  website            String?          @db.VarChar(32)
+  role               UserRole         @default(COLLABORATOR)
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+  products           Product[]
+  acceptanceRules    AcceptanceRule[]
+  sellerTransactions Transaction[]    @relation("transaction_seller")
+  buyerTransactions  Transaction[]    @relation("transaction_buyer")
 
   @@map("users")
 }
@@ -85,46 +90,48 @@ model CategoryForProduct {
   @@map("categories_for_products")
 }
 
+model AcceptanceRule {
+  partner                  User                 @relation(fields: [partnerId], references: [id])
+  partnerId                Int                  @map("partner_id")
+  plastic                  Plastic              @relation(fields: [plasticId], references: [id])
+  plasticId                Int                  @map("plastic_id")
+  pricePerKilogram         Int                  @map("price_per_kilogram")
+  status                   AcceptanceRuleStatus @default(INACTIVE)
+  minimumTransactionWeight Decimal              @map("minimum_transaction_weight")
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+
+  @@id([partnerId, plasticId])
+  @@map("acceptance_rules")
+}
+
 model Transaction {
-  id              Int                 @id @default(autoincrement())
-  partner         User                @relation("transaction_partner", fields: [partnerId], references: [id])
-  partnerId       Int                 @map("partner_id")
-  collaborator    User                @relation("transaction_collaborator", fields: [collaboratorId], references: [id])
-  collaboratorId  Int                 @map("collaborator_id")
-  status          TransactionStatus   @default(PROCESSED)
-  note            String?             @db.VarChar(256)
-  photo           String              @db.VarChar(256)
-  weight          Decimal
-  plastic         Plastic             @relation(fields: [plasticId], references: [id])
-  plasticId       Int                 @map("plastic_id")
-  handoverType    TransactionHandover @map("handover_type")
-  handoverFee     Int                 @default(0) @map("handover_fee")
-  transactionTime DateTime?           @map("transaction_time")
-  createdAt       DateTime            @default(now()) @map("created_at")
-  updatedAt       DateTime            @updatedAt @map("updated_at")
+  id               Int                 @id @default(autoincrement())
+  seller           User                @relation("transaction_seller", fields: [sellerId], references: [id])
+  sellerId         Int                 @map("seller_id")
+  buyer            User                @relation("transaction_buyer", fields: [buyerId], references: [id])
+  buyerId          Int                 @map("buyer_id")
+  status           TransactionStatus   @default(SUBMITTED)
+  note             String?             @db.VarChar(256)
+  photo            String              @db.VarChar(256)
+  weight           Decimal
+  pricePerKilogram Int                 @map("price_per_kilogram")
+  plastic          Plastic             @relation(fields: [plasticId], references: [id])
+  plasticId        Int                 @map("plastic_id")
+  handover         TransactionHandover @default(SELFDELIVERY)
+  handoverFee      Int                 @default(0) @map("handover_fee")
+  transactionTime  DateTime?           @map("transaction_time")
+  createdAt        DateTime            @default(now()) @map("created_at")
+  updatedAt        DateTime            @updatedAt @map("updated_at")
 
   @@map("transactions")
 }
 
-model TransactionAcceptanceRule {
-  partner                  User     @relation(fields: [partnerId], references: [id])
-  partnerId                Int      @map("partner_id")
-  plastic                  Plastic  @relation(fields: [plasticId], references: [id])
-  plasticId                Int      @map("plastic_id")
-  pricePerKilogram         Int      @map("price_per_kilogram")
-  minimumTransactionWeight Decimal  @map("minimum_transaction_weight")
-  createdAt                DateTime @default(now()) @map("created_at")
-  updatedAt                DateTime @updatedAt @map("updated_at")
-
-  @@id([partnerId, plasticId])
-  @@map("plastic_acceptance_rules")
-}
-
 model Plastic {
-  id                         Int                         @id @default(autoincrement())
-  name                       String                      @unique @db.VarChar(16)
-  transactions               Transaction[]
-  transactionAcceptanceRules TransactionAcceptanceRule[]
+  id              Int              @id @default(autoincrement())
+  name            String           @unique @db.VarChar(16)
+  transactions    Transaction[]
+  acceptanceRules AcceptanceRule[]
 
   @@map("plastics")
 }
