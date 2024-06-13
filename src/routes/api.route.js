@@ -1,5 +1,6 @@
 const express = require("express");
 const resource = require("../utilities/resource.utility");
+const AuthController = require("../controllers/auth.controller");
 const UsersController = require("../controllers/users.controller");
 const ProductsController = require("../controllers/products.controller");
 const ProductsCategoriesController = require("../controllers/productsCategories.controller");
@@ -10,6 +11,8 @@ const PlasticsController = require("../controllers/plastics.controller");
 
 const api = express.Router();
 
+api.post("/login", AuthController.login);
+api.post("/register", AuthController.register);
 api.use("/users", resource(UsersController));
 api.use("/products", resource(ProductsController));
 api.use("/products-categories", resource(ProductsCategoriesController));
