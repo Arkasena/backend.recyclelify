@@ -41,7 +41,7 @@ model User {
   description        String?          @db.VarChar(256)
   phoneNumber        String           @map("phone_number") @db.VarChar(16)
   email              String           @unique @db.VarChar(320)
-  password           String           @db.VarChar(32)
+  password           String           @db.VarChar(128)
   address            String           @db.VarChar(128)
   photo              String?          @db.VarChar(256)
   website            String?          @db.VarChar(32)

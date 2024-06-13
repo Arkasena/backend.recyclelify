@@ -1,5 +1,7 @@
 const express = require("express");
 const resource = require("../utilities/resource.utility");
+const { authentication } = require("../middlewares/auth.middleware");
+const AuthController = require("../controllers/auth.controller");
 const UsersController = require("../controllers/users.controller");
 const ProductsController = require("../controllers/products.controller");
 const ProductsCategoriesController = require("../controllers/productsCategories.controller");
@@ -10,12 +12,14 @@ const PlasticsController = require("../controllers/plastics.controller");
 
 const api = express.Router();
 
-api.use("/users", resource(UsersController));
-api.use("/products", resource(ProductsController));
-api.use("/products-categories", resource(ProductsCategoriesController));
-api.use("/categories-for-products", resource(CategoriesForProductsController));
-api.use("/acceptance-rules", resource(AcceptanceRulesController));
-api.use("/transactions", resource(TransactionsController));
-api.use("/plastics", resource(PlasticsController));
+api.post("/login", AuthController.login);
+api.post("/register", AuthController.register);
+api.use("/users", authentication, resource(UsersController));
+api.use("/products", authentication, resource(ProductsController));
+api.use("/products-categories", authentication, resource(ProductsCategoriesController));
+api.use("/categories-for-products", authentication, resource(CategoriesForProductsController));
+api.use("/acceptance-rules", authentication, resource(AcceptanceRulesController));
+api.use("/transactions", authentication, resource(TransactionsController));
+api.use("/plastics", authentication, resource(PlasticsController));
 
 module.exports = api;
