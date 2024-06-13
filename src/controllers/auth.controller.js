@@ -70,6 +70,7 @@ class AuthController {
         });
       }
 
+      console.error({ error });
       return res.status(500).json({ error });
     }
   }
@@ -152,6 +153,7 @@ class AuthController {
         });
       }
 
+      console.error(error);
       return res.status(500).json({ error });
     }
   }
