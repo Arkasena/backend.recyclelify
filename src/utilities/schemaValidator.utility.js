@@ -6,20 +6,28 @@ const {
   TransactionHandover,
 } = require("@prisma/client");
 
+const credentials = joi.object({
+  email: joi
+    .string()
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+    .required(),
+  password: joi.string().min(8).max(128).required(),
+});
+
 const user = joi.object({
   id: joi.number(),
   username: joi.string().alphanum().min(3).max(32).required(),
   name: joi.string().min(3).max(64).required(),
-  description: joi.string().max(256),
+  description: joi.string().max(256).optional(),
   phoneNumber: joi.string().min(12).max(16).required(),
   email: joi
     .string()
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
-  password: joi.string().min(8).max(32).required(),
+  password: joi.string().min(8).max(128).required(),
   address: joi.string().max(128).required(),
-  photo: joi.string().max(256),
-  website: joi.string().max(32),
+  photo: joi.string().max(256).optional(),
+  website: joi.string().max(32).optional(),
   role: joi
     .string()
     .alphanum()
@@ -77,7 +85,7 @@ const transaction = joi.object({
     .valid(...Object.values(TransactionStatus))
     .default(TransactionStatus.SUBMITTED)
     .required(),
-  note: joi.string().max(256),
+  note: joi.string().max(256).optional(),
   photo: joi.string().max(256).required(),
   weight: joi.number().precision(30).required(),
   pricePerKilogram: joi.number().required(),
@@ -89,7 +97,7 @@ const transaction = joi.object({
     .default(TransactionHandover.SELFDELIVERY)
     .required(),
   handoverFee: joi.number().required(),
-  transactionTime: joi.date().iso(),
+  transactionTime: joi.date().iso().optional(),
   createdAt: joi.date().iso(),
   updatedAt: joi.date().iso(),
 });
@@ -100,6 +108,7 @@ const plastic = joi.object({
 });
 
 module.exports = {
+  credentials,
   user,
   product,
   productCategory,
