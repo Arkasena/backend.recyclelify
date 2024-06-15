@@ -73,12 +73,12 @@ model Product {
 }
 
 model ProductCategory {
+  id         Int                @id @default(autoincrement())
   product    Product            @relation(fields: [productId], references: [id])
   productId  Int                @map("product_id")
   category   CategoryForProduct @relation(fields: [categoryId], references: [id])
   categoryId Int                @map("category_id")
 
-  @@id([productId, categoryId])
   @@map("products_categories")
 }
 
@@ -91,6 +91,7 @@ model CategoryForProduct {
 }
 
 model AcceptanceRule {
+  id                       Int                  @id @default(autoincrement())
   partner                  User                 @relation(fields: [partnerId], references: [id])
   partnerId                Int                  @map("partner_id")
   plastic                  Plastic              @relation(fields: [plasticId], references: [id])
@@ -101,7 +102,6 @@ model AcceptanceRule {
   createdAt                DateTime             @default(now()) @map("created_at")
   updatedAt                DateTime             @updatedAt @map("updated_at")
 
-  @@id([partnerId, plasticId])
   @@map("acceptance_rules")
 }
 
