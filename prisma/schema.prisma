@@ -57,17 +57,17 @@ model User {
 }
 
 model Product {
-  id                Int               @id @default(autoincrement())
-  partner           User              @relation(fields: [partnerId], references: [id])
-  partnerId         Int               @map("partner_id")
-  name              String            @db.VarChar(32)
-  description       String            @db.VarChar(256)
-  price             Int
-  photo             String            @db.VarChar(256)
-  link              String            @db.VarChar(256)
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @map("updated_at")
-  productCategories ProductCategory[]
+  id          Int               @id @default(autoincrement())
+  partner     User              @relation(fields: [partnerId], references: [id])
+  partnerId   Int               @map("partner_id")
+  name        String            @db.VarChar(32)
+  description String            @db.VarChar(256)
+  price       Int
+  photo       String            @db.VarChar(256)
+  link        String            @db.VarChar(256)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  categories  ProductCategory[]
 
   @@map("products")
 }
@@ -83,9 +83,9 @@ model ProductCategory {
 }
 
 model CategoryForProduct {
-  id              Int               @id @default(autoincrement())
-  name            String            @unique @db.VarChar(32)
-  productCategory ProductCategory[]
+  id       Int               @id @default(autoincrement())
+  name     String            @unique @db.VarChar(32)
+  products ProductCategory[]
 
   @@map("categories_for_products")
 }
