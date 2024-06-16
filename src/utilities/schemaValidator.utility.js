@@ -51,6 +51,7 @@ const product = joi.object({
 });
 
 const productCategory = joi.object({
+  id: joi.number(),
   productId: joi.number().required(),
   categoryId: joi.number().required(),
 });
@@ -61,6 +62,7 @@ const categoryForProduct = joi.object({
 });
 
 const acceptanceRule = joi.object({
+  id: joi.number(),
   partnerId: joi.number().required(),
   plasticId: joi.number().required(),
   pricePerKilogram: joi.number().required(),

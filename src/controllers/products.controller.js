@@ -1,13 +1,15 @@
 // const {} = require("@prisma/client");
 const prismaClient = require("../utilities/prismaClient.utility");
 const schemaValidator = require("../utilities/schemaValidator.utility");
+const validationError = require("../utilities/validationError.utility");
 
 class ProductsController {
   static async index(req, res) {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 9;
+    const page = Number(req.query.page) || 1;
+    const limit = Number(req.query.limit) || 9;
     const index = (page - 1) * limit;
-    const partnerId = parseInt(req.query.partnerId) || undefined;
+    const partnerId = Number(req.query.partnerId) || undefined;
+    const relations = req.query.relations || [];
 
     try {
       const total = await prismaClient.product.count({
@@ -22,12 +24,35 @@ class ProductsController {
         where: {
           partnerId: partnerId,
         },
+        include: {
+          partner: relations.includes("partner")
+            ? {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  description: true,
+                  phoneNumber: true,
+                  email: true,
+                  address: true,
+                  photo: true,
+                  website: true,
+                },
+              }
+            : false,
+          categories: relations.includes("categories")
+            ? {
+                include: {
+                  category: true,
+                },
+              }
+            : false,
+        },
       });
 
       return res.json({
-        status: "success",
         data: products,
-        metadata: {
+        meta: {
           total,
           limit,
           page: {
@@ -41,9 +66,8 @@ class ProductsController {
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -51,23 +75,46 @@ class ProductsController {
 
   static async show(req, res) {
     const { id } = req.params;
+    const relations = req.query.relations || [];
 
     try {
       const product = await prismaClient.product.findUnique({
         where: {
           id: Number(id),
         },
+        include: {
+          partner: relations.includes("partner")
+            ? {
+                select: {
+                  id: true,
+                  username: true,
+                  name: true,
+                  description: true,
+                  phoneNumber: true,
+                  email: true,
+                  address: true,
+                  photo: true,
+                  website: true,
+                },
+              }
+            : false,
+          categories: relations.includes("categories")
+            ? {
+                include: {
+                  category: true,
+                },
+              }
+            : false,
+        },
       });
 
       return res.json({
-        status: "success",
         data: product,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -75,21 +122,33 @@ class ProductsController {
 
   static async save(req, res) {
     try {
-      const validationResult = await schemaValidator.product.validateAsync(req.body);
+      const validationResult = await schemaValidator.product.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
 
       const product = await prismaClient.product.create({
         data: validationResult,
       });
 
       return res.status(201).json({
-        status: "success",
         data: product,
       });
     } catch (error) {
       console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -99,7 +158,15 @@ class ProductsController {
     const { id } = req.params;
 
     try {
-      const validationResult = await schemaValidator.product.validateAsync(req.body);
+      const validationResult = await schemaValidator.product.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
 
       const product = await prismaClient.product.update({
         where: {
@@ -109,14 +176,18 @@ class ProductsController {
       });
 
       return res.json({
-        status: "success",
         data: product,
       });
     } catch (error) {
       console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -133,14 +204,12 @@ class ProductsController {
       });
 
       return res.json({
-        status: "success",
         data: product,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
