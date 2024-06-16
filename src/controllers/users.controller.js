@@ -192,10 +192,23 @@ class UsersController {
         data: { ...validationResult, password: await argon2.hash(validationResult.password) },
       });
 
-      user = exclude(user, ["password"]);
+      const token = jwt.sign(
+        {
+          id: user.id,
+          role: user.role,
+        },
+        process.env.SECRET_KEY,
+        { expiresIn: 60 * 60 }
+      );
 
       return res.status(201).json({
-        data: user,
+        data: {
+          token,
+          user: {
+            id: user.id,
+            role: user.role,
+          },
+        },
       });
     } catch (error) {
       console.error(error);
@@ -310,9 +323,17 @@ class UsersController {
         { expiresIn: 60 * 60 }
       );
 
-      return res.json({ data: token });
+      return res.json({
+        data: {
+          token,
+          user: {
+            id: user.id,
+            role: user.role,
+          },
+        },
+      });
     } catch (error) {
-      console.error({ error });
+      console.error(error);
 
       if (error?.details) {
         return res.status(400).json({
