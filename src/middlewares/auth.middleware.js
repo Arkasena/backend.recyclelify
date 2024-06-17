@@ -1,9 +1,10 @@
 const jwt = require("jsonwebtoken");
+const permissions = require("../constants/permissions.constant");
 
-async function authentication(req, res, next) {
-  const fullToken = req.headers.authorization;
+async function auth(req, res, next) {
+  const authorization = req.headers.authorization;
 
-  if (!fullToken) {
+  if (!authorization) {
     return res.status(401).json({
       error: {
         token: "require token for access resources",
@@ -11,7 +12,7 @@ async function authentication(req, res, next) {
     });
   }
 
-  if (fullToken.split(" ")[0] !== "Bearer") {
+  if (authorization.split(" ")[0] !== "Bearer") {
     return res.status(401).send({
       error: {
         token: "incorrect token format",
@@ -19,7 +20,7 @@ async function authentication(req, res, next) {
     });
   }
 
-  const token = fullToken.split(" ")[1];
+  const token = authorization.split(" ")[1];
 
   if (!token) {
     return res.status(401).send({
@@ -30,13 +31,21 @@ async function authentication(req, res, next) {
   }
 
   try {
-    const decoded = jwt.verify(token, process.env.SECRET_KEY);
+    const decodeToken = jwt.verify(token, process.env.SECRET_KEY);
+    const path = req.path.split("/")[1];
+    const allowed = permissions[decodeToken.role][path].includes(req.method);
 
-    req.token = decoded;
+    if (!allowed) {
+      return res.status(403).json({
+        error: {
+          token: "access not allowed",
+        },
+      });
+    }
 
     next();
   } catch (error) {
-    console.log(error);
+    console.error(error);
 
     return res.status(401).json({
       error: {
@@ -46,4 +55,4 @@ async function authentication(req, res, next) {
   }
 }
 
-module.exports = { authentication };
+module.exports = auth;
