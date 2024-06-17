@@ -225,47 +225,6 @@ class UsersController {
     }
   }
 
-  static async update(req, res) {
-    const { id } = req.params;
-
-    try {
-      const validationResult = await schemaValidator.user.validateAsync(req.body, {
-        stripUnknown: true,
-        abortEarly: false,
-        errors: {
-          wrap: {
-            label: false,
-          },
-        },
-      });
-
-      let user = await prismaClient.user.update({
-        where: {
-          id: Number(id),
-        },
-        data: { ...validationResult, password: await argon2.hash(validationResult.password) },
-      });
-
-      user = exclude(user, ["password"]);
-
-      return res.json({
-        data: user,
-      });
-    } catch (error) {
-      console.error(error);
-
-      if (error?.details) {
-        return res.status(400).json({
-          error: validationError(error.details),
-        });
-      }
-
-      return res.status(500).json({
-        error,
-      });
-    }
-  }
-
   static async login(req, res) {
     const { email, password } = req.body;
 
@@ -346,11 +305,50 @@ class UsersController {
   }
 
   static async resetPassword(req, res) {
-    return res.json({
-      data: {
-        password: "success update password",
-      },
+    return res.status(500).json({
+      error: "under development",
     });
+  }
+
+  static async update(req, res) {
+    const { id } = req.params;
+
+    try {
+      const validationResult = await schemaValidator.user.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
+
+      let user = await prismaClient.user.update({
+        where: {
+          id: Number(id),
+        },
+        data: { ...validationResult, password: await argon2.hash(validationResult.password) },
+      });
+
+      user = exclude(user, ["password"]);
+
+      return res.json({
+        data: user,
+      });
+    } catch (error) {
+      console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
+      return res.status(500).json({
+        error,
+      });
+    }
   }
 
   static async delete(req, res) {

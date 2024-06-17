@@ -14,16 +14,16 @@ const api = express.Router();
 api.get("/users", UsersController.index);
 api.get("/users/:id", UsersController.show);
 api.post("/register", UsersController.register);
-api.post("/users/:id", UsersController.update);
 api.post("/login", UsersController.login);
-api.post("/reset-password", UsersController.resetPassword);
-api.delete("/delete-account", UsersController.delete);
+api.post("/reset-password", [authentication], UsersController.resetPassword);
+api.put("/users/:id", [authentication], UsersController.update);
+api.delete("/delete-account", [authentication], UsersController.delete);
 
-api.use("/products", authentication, resource(ProductsController));
-api.use("/products-categories", authentication, resource(ProductsCategoriesController));
-api.use("/categories-for-products", authentication, resource(CategoriesForProductsController));
-api.use("/acceptance-rules", authentication, resource(AcceptanceRulesController));
-api.use("/transactions", authentication, resource(TransactionsController));
-api.use("/plastics", authentication, resource(PlasticsController));
+api.use("/products", resource(ProductsController, [authentication]));
+api.use("/products-categories", resource(ProductsCategoriesController, [authentication]));
+api.use("/categories-for-products", resource(CategoriesForProductsController, [authentication]));
+api.use("/acceptance-rules", resource(AcceptanceRulesController, [authentication]));
+api.use("/transactions", resource(TransactionsController, [authentication], true));
+api.use("/plastics", resource(PlasticsController, [authentication]));
 
 module.exports = api;
