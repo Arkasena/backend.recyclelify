@@ -149,7 +149,7 @@ class UsersController {
     }
   }
 
-  static async register(req, res) {
+  static async save(req, res) {
     try {
       const validationResult = await schemaValidator.user.validateAsync(req.body, {
         stripUnknown: true,
@@ -218,6 +218,71 @@ class UsersController {
           error: validationError(error.details),
         });
       }
+
+      return res.status(500).json({
+        error,
+      });
+    }
+  }
+
+  static async update(req, res) {
+    const { id } = req.params;
+
+    try {
+      const validationResult = await schemaValidator.user.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
+
+      let user = await prismaClient.user.update({
+        where: {
+          id: Number(id),
+        },
+        data: { ...validationResult, password: await argon2.hash(validationResult.password) },
+      });
+
+      user = exclude(user, ["password"]);
+
+      return res.json({
+        data: user,
+      });
+    } catch (error) {
+      console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
+      return res.status(500).json({
+        error,
+      });
+    }
+  }
+
+  static async delete(req, res) {
+    const { id } = req.params;
+
+    try {
+      let user = await prismaClient.user.delete({
+        where: {
+          id: Number(id),
+        },
+      });
+
+      user = exclude(user, ["password"]);
+
+      return res.json({
+        data: user,
+      });
+    } catch (error) {
+      console.error(error);
 
       return res.status(500).json({
         error,
@@ -308,71 +373,6 @@ class UsersController {
     return res.status(500).json({
       error: "under development",
     });
-  }
-
-  static async update(req, res) {
-    const { id } = req.params;
-
-    try {
-      const validationResult = await schemaValidator.user.validateAsync(req.body, {
-        stripUnknown: true,
-        abortEarly: false,
-        errors: {
-          wrap: {
-            label: false,
-          },
-        },
-      });
-
-      let user = await prismaClient.user.update({
-        where: {
-          id: Number(id),
-        },
-        data: { ...validationResult, password: await argon2.hash(validationResult.password) },
-      });
-
-      user = exclude(user, ["password"]);
-
-      return res.json({
-        data: user,
-      });
-    } catch (error) {
-      console.error(error);
-
-      if (error?.details) {
-        return res.status(400).json({
-          error: validationError(error.details),
-        });
-      }
-
-      return res.status(500).json({
-        error,
-      });
-    }
-  }
-
-  static async delete(req, res) {
-    const { id } = req.params;
-
-    try {
-      let user = await prismaClient.user.delete({
-        where: {
-          id: Number(id),
-        },
-      });
-
-      user = exclude(user, ["password"]);
-
-      return res.json({
-        data: user,
-      });
-    } catch (error) {
-      console.error(error);
-
-      return res.status(500).json({
-        error,
-      });
-    }
   }
 }
 

@@ -12,11 +12,11 @@ const api = express.Router();
 
 api.get("/users", UsersController.index);
 api.get("/users/:id", UsersController.show);
-api.post("/register", UsersController.register);
+api.post("/users", UsersController.save);
+api.put("/users/:id", auth, UsersController.update);
+api.delete("/users/:id", auth, UsersController.delete);
 api.post("/login", UsersController.login);
 api.post("/reset-password/:id", auth, UsersController.resetPassword);
-api.put("/users/:id", auth, UsersController.update);
-api.delete("/delete-account/:id", auth, UsersController.delete);
 
 api.get("/products", ProductsController.index);
 api.get("/products/:id", ProductsController.show);
