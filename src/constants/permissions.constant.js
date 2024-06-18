@@ -2,8 +2,7 @@ const { UserRole } = require("@prisma/client");
 
 const generalPermissions = {
   "reset-password": ["POST"],
-  users: ["PUT"],
-  "delete-account": ["DELETE"],
+  users: ["PUT", "DELETE"],
 };
 
 const permissions = {
