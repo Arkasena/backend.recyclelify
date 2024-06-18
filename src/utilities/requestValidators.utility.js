@@ -16,7 +16,6 @@ const updateUser = joi.object({
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
   address: joi.string().max(128).required(),
-  photo: joi.string().max(256).optional(),
   website: joi.string().max(32).optional(),
 });
 
@@ -52,7 +51,6 @@ const product = joi.object({
   name: joi.string().min(3).max(32).required(),
   description: joi.string().max(256).required(),
   price: joi.number().required(),
-  photo: joi.string().max(256).required(),
   link: joi.string().max(256).required(),
 });
 
@@ -88,7 +86,6 @@ const transaction = joi.object({
     .default(TransactionStatus.SUBMITTED)
     .required(),
   note: joi.string().max(256).optional(),
-  photo: joi.string().max(256).required(),
   weight: joi.number().required(),
   pricePerKilogram: joi.number().required(),
   plasticId: joi.number().required(),

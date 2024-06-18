@@ -1,6 +1,7 @@
 const jwt = require("jsonwebtoken");
 const argon2 = require("argon2");
 const { UserRole } = require("@prisma/client");
+const { uploadDirect } = require("@uploadcare/upload-client");
 const prismaClient = require("../utilities/prismaClient.utility");
 const requestValidators = require("../utilities/requestValidators.utility");
 const validationError = require("../utilities/validationError.utility");
@@ -255,7 +256,7 @@ class UsersController {
 
   static async update(req, res) {
     const { id } = req.params;
-    console.log(req.body);
+    const photo = req.files?.photo;
 
     try {
       const validationResult = await requestValidators.updateUser.validateAsync(req.body, {
@@ -268,11 +269,31 @@ class UsersController {
         },
       });
 
+      let photoLink;
+
+      if (photo) {
+        const allowedMimetypes = ["image/jpeg", "image/png"];
+
+        if (allowedMimetypes.includes(photo?.mimetype)) {
+          const uploadPhotoResult = await uploadDirect(photo.data, {
+            publicKey: process.env.UPLOADCARE_PUBLIC_KEY,
+            store: "auto",
+            fileName: validationResult.username,
+          });
+
+          photoLink = `https://ucarecdn.com/${uploadPhotoResult.uuid}/-/preview/512x512/`;
+        } else {
+          throw {
+            photo: "photo must be jpg, jpeg, or png",
+          };
+        }
+      }
+
       let user = await prismaClient.user.update({
         where: {
           id: Number(id),
         },
-        data: validationResult,
+        data: { ...validationResult, photo: photoLink },
       });
 
       user = exclude(user, ["password"]);
