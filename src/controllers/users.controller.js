@@ -13,6 +13,8 @@ class UsersController {
     const index = (page - 1) * limit;
     const role = UserRole[req.query.role?.toUpperCase()];
     const name = req.query.name || undefined;
+    const nameOrder = req.query.nameOrder || undefined;
+    const plastic = req.query.plastic || undefined;
     const relations = req.query.relations || [];
 
     try {
@@ -22,6 +24,13 @@ class UsersController {
           name: {
             contains: name,
             mode: "insensitive",
+          },
+          acceptanceRules: {
+            some: {
+              plastic: {
+                name: plastic,
+              },
+            },
           },
         },
       });
@@ -35,6 +44,16 @@ class UsersController {
             contains: name,
             mode: "insensitive",
           },
+          acceptanceRules: {
+            some: {
+              plastic: {
+                name: plastic,
+              },
+            },
+          },
+        },
+        orderBy: {
+          name: nameOrder,
         },
         include: {
           products: relations.includes("products")
