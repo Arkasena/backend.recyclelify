@@ -5,19 +5,20 @@ class StatisticController {
     const { transactionType, id } = req.params;
 
     try {
-      const byTransactionType = {
-        sales: {
-          sellerId: Number(id),
-        },
-        purchase: {
-          buyerId: Number(id),
-        },
-      };
-
       const transactions = await prismaClient.transaction.findMany({
-        where: byTransactionType[transactionType?.toLowerCase()],
+        where: {
+          [transactionType === "sales" ? "sellerId" : "buyerId"]: Number(id),
+        },
         orderBy: {
           updatedAt: "asc",
+        },
+        include: {
+          [transactionType === "sales" ? "buyer" : "seller"]: {
+            select: {
+              name: true,
+              photo: true,
+            },
+          },
         },
       });
 
