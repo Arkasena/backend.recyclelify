@@ -12,12 +12,17 @@ class UsersController {
     const limit = Number(req.query.limit) || 9;
     const index = (page - 1) * limit;
     const role = UserRole[req.query.role?.toUpperCase()];
+    const name = req.query.name || undefined;
     const relations = req.query.relations || [];
 
     try {
       const total = await prismaClient.user.count({
         where: {
           role,
+          name: {
+            contains: name,
+            mode: "insensitive",
+          },
         },
       });
 
@@ -26,6 +31,10 @@ class UsersController {
         take: limit,
         where: {
           role,
+          name: {
+            contains: name,
+            mode: "insensitive",
+          },
         },
         include: {
           products: relations.includes("products")
