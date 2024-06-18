@@ -2,7 +2,7 @@ const jwt = require("jsonwebtoken");
 const argon2 = require("argon2");
 const { UserRole } = require("@prisma/client");
 const prismaClient = require("../utilities/prismaClient.utility");
-const schemaValidator = require("../utilities/schemaValidator.utility");
+const requestValidators = require("../utilities/requestValidators.utility");
 const validationError = require("../utilities/validationError.utility");
 const { exclude } = require("../utilities/common.utility");
 
@@ -149,9 +149,9 @@ class UsersController {
     }
   }
 
-  static async register(req, res) {
+  static async save(req, res) {
     try {
-      const validationResult = await schemaValidator.user.validateAsync(req.body, {
+      const validationResult = await requestValidators.saveUser.validateAsync(req.body, {
         stripUnknown: true,
         abortEarly: false,
         errors: {
@@ -225,96 +225,12 @@ class UsersController {
     }
   }
 
-  static async login(req, res) {
-    const { email, password } = req.body;
-
-    try {
-      await schemaValidator.credentials.validateAsync(
-        {
-          email,
-          password,
-        },
-        {
-          abortEarly: false,
-          error: {
-            wrap: {
-              label: false,
-            },
-          },
-        }
-      );
-
-      const user = await prismaClient.user.findUnique({
-        where: {
-          email,
-        },
-        select: {
-          id: true,
-          password: true,
-          role: true,
-        },
-      });
-
-      if (!user) {
-        return res.status(404).json({
-          error: {
-            email: "email not registered",
-          },
-        });
-      }
-
-      const verify = await argon2.verify(user.password, password);
-
-      if (!verify) {
-        return res.status(401).json({
-          error: {
-            password: "incorrect password",
-          },
-        });
-      }
-
-      const token = jwt.sign(
-        {
-          id: user.id,
-          role: user.role,
-        },
-        process.env.SECRET_KEY,
-        { expiresIn: 60 * 60 }
-      );
-
-      return res.json({
-        data: {
-          token,
-          user: {
-            id: user.id,
-            role: user.role,
-          },
-        },
-      });
-    } catch (error) {
-      console.error(error);
-
-      if (error?.details) {
-        return res.status(400).json({
-          error: validationError(error.details),
-        });
-      }
-
-      return res.status(500).json({ error });
-    }
-  }
-
-  static async resetPassword(req, res) {
-    return res.status(500).json({
-      error: "under development",
-    });
-  }
-
   static async update(req, res) {
     const { id } = req.params;
+    console.log(req.body);
 
     try {
-      const validationResult = await schemaValidator.user.validateAsync(req.body, {
+      const validationResult = await requestValidators.updateUser.validateAsync(req.body, {
         stripUnknown: true,
         abortEarly: false,
         errors: {
@@ -328,7 +244,7 @@ class UsersController {
         where: {
           id: Number(id),
         },
-        data: { ...validationResult, password: await argon2.hash(validationResult.password) },
+        data: validationResult,
       });
 
       user = exclude(user, ["password"]);
@@ -372,6 +288,152 @@ class UsersController {
       return res.status(500).json({
         error,
       });
+    }
+  }
+
+  static async login(req, res) {
+    try {
+      const validationResult = await requestValidators.login.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
+
+      const user = await prismaClient.user.findUnique({
+        where: {
+          email: validationResult.email,
+        },
+        select: {
+          id: true,
+          password: true,
+          role: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          error: {
+            email: "email not registered",
+          },
+        });
+      }
+
+      const verify = await argon2.verify(user.password, validationResult.password);
+
+      if (!verify) {
+        return res.status(401).json({
+          error: {
+            password: "incorrect password",
+          },
+        });
+      }
+
+      const token = jwt.sign(
+        {
+          id: user.id,
+          role: user.role,
+        },
+        process.env.SECRET_KEY,
+        { expiresIn: 60 * 60 }
+      );
+
+      return res.json({
+        data: {
+          token,
+          user: {
+            id: user.id,
+            role: user.role,
+          },
+        },
+      });
+    } catch (error) {
+      console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
+      return res.status(500).json({ error });
+    }
+  }
+
+  static async resetPassword(req, res) {
+    const { id } = req.params;
+
+    try {
+      const validationResult = await requestValidators.resetPassword.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
+
+      const user = await prismaClient.user.findUnique({
+        where: {
+          id: Number(id),
+        },
+        select: {
+          password: true,
+        },
+      });
+
+      if (!user) {
+        return res.status(404).json({
+          error: {
+            email: "user not found",
+          },
+        });
+      }
+
+      const verify = await argon2.verify(user.password, validationResult.oldPassword);
+
+      if (!verify) {
+        return res.status(401).json({
+          error: {
+            password: "incorrect old password",
+          },
+        });
+      }
+
+      const updatePassword = await prismaClient.user.update({
+        where: {
+          id: Number(id),
+        },
+        data: { password: await argon2.hash(validationResult.newPassword) },
+      });
+
+      if (!updatePassword) {
+        return res.status(500).json({
+          data: {
+            password: "password failed to updated",
+          },
+        });
+      }
+
+      return res.json({
+        data: {
+          password: "password updated successfully",
+        },
+      });
+    } catch (error) {
+      console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
+      return res.status(500).json({ error });
     }
   }
 }

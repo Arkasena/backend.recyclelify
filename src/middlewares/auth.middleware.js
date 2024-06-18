@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const permissions = require("../constants/permissions.constant");
+const { UserRole } = require("@prisma/client");
 
 async function auth(req, res, next) {
   const authorization = req.headers.authorization;
@@ -33,6 +34,11 @@ async function auth(req, res, next) {
   try {
     const decodeToken = jwt.verify(token, process.env.SECRET_KEY);
     const path = req.path.split("/")[1];
+
+    if (decodeToken.role === UserRole.ADMIN) {
+      return next();
+    }
+
     const allowed = permissions[decodeToken.role][path].includes(req.method);
 
     if (!allowed) {
