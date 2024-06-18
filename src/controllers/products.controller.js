@@ -1,3 +1,4 @@
+const { uploadDirect } = require("@uploadcare/upload-client");
 const prismaClient = require("../utilities/prismaClient.utility");
 const requestValidators = require("../utilities/requestValidators.utility");
 const validationError = require("../utilities/validationError.utility");
@@ -148,6 +149,8 @@ class ProductsController {
   }
 
   static async save(req, res) {
+    const photo = req.files?.photo;
+
     try {
       const validationResult = await requestValidators.product.validateAsync(req.body, {
         stripUnknown: true,
@@ -159,8 +162,33 @@ class ProductsController {
         },
       });
 
+      let photoLink;
+
+      if (photo) {
+        const allowedMimetypes = ["image/jpeg", "image/png"];
+
+        if (allowedMimetypes.includes(photo?.mimetype)) {
+          const date = new Date();
+          const fileName = `${
+            validationResult.partnerId
+          }_${date.getDate()}-${date.getMonth()}-${date.getFullYear()}`;
+
+          const uploadPhotoResult = await uploadDirect(photo.data, {
+            publicKey: process.env.UPLOADCARE_PUBLIC_KEY,
+            store: "auto",
+            fileName,
+          });
+
+          photoLink = `https://ucarecdn.com/${uploadPhotoResult.uuid}/-/preview/512x512/`;
+        } else {
+          throw {
+            photo: "photo must be jpg, jpeg, or png",
+          };
+        }
+      }
+
       const product = await prismaClient.product.create({
-        data: validationResult,
+        data: { ...validationResult, photo: photoLink },
       });
 
       return res.status(201).json({
