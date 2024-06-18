@@ -7,6 +7,7 @@ const CategoriesForProductsController = require("../controllers/categoriesForPro
 const AcceptanceRulesController = require("../controllers/acceptanceRules.controller");
 const TransactionsController = require("../controllers/transactions.controller");
 const PlasticsController = require("../controllers/plastics.controller");
+const StatisticController = require("../controllers/statistic.controller")
 
 const api = express.Router();
 
@@ -53,5 +54,7 @@ api.get("/plastics/:id", PlasticsController.show);
 api.post("/plastics", auth, PlasticsController.save);
 api.put("/plastics/:id", auth, PlasticsController.update);
 api.delete("/plastics/:id", auth, PlasticsController.delete);
+
+api.get("/statistic/:transactionType/:id", StatisticController.index)
 
 module.exports = api;
