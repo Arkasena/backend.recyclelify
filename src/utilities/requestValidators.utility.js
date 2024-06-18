@@ -6,16 +6,7 @@ const {
   TransactionHandover,
 } = require("@prisma/client");
 
-const credentials = joi.object({
-  email: joi
-    .string()
-    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
-    .required(),
-  password: joi.string().min(8).max(128).required(),
-});
-
-const user = joi.object({
-  id: joi.number(),
+const updateUser = joi.object({
   username: joi.string().alphanum().min(3).max(32).required(),
   name: joi.string().min(3).max(64).required(),
   description: joi.string().max(256).optional(),
@@ -24,45 +15,57 @@ const user = joi.object({
     .string()
     .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
     .required(),
-  password: joi.string().min(8).max(128).required(),
   address: joi.string().max(128).required(),
   photo: joi.string().max(256).optional(),
   website: joi.string().max(32).optional(),
+});
+
+const saveUser = updateUser.append({
+  password: joi.string().min(8).max(128).required(),
   role: joi
     .string()
     .alphanum()
-    .valid(...Object.values(UserRole))
+    .valid(...Object.values(UserRole).filter((role) => role !== UserRole.ADMIN))
     .default(UserRole.COLLABORATOR)
     .required(),
-  createdAt: joi.date().iso(),
-  updatedAt: joi.date().iso(),
+});
+
+const deleteUser = joi.object({
+  password: joi.string().min(8).max(128).required(),
+});
+
+const login = joi.object({
+  email: joi
+    .string()
+    .email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+    .required(),
+  password: joi.string().min(8).max(128).required(),
+});
+
+const resetPassword = joi.object({
+  oldPassword: joi.string().min(8).max(128).required(),
+  newPassword: joi.string().min(8).max(128).required(),
 });
 
 const product = joi.object({
-  id: joi.number(),
   partnerId: joi.number().required(),
   name: joi.string().min(3).max(32).required(),
   description: joi.string().max(256).required(),
   price: joi.number().required(),
   photo: joi.string().max(256).required(),
   link: joi.string().max(256).required(),
-  createdAt: joi.date().iso(),
-  updatedAt: joi.date().iso(),
 });
 
 const productCategory = joi.object({
-  id: joi.number(),
   productId: joi.number().required(),
   categoryId: joi.number().required(),
 });
 
 const categoryForProduct = joi.object({
-  id: joi.number(),
   name: joi.string().min(3).max(32).required(),
 });
 
 const acceptanceRule = joi.object({
-  id: joi.number(),
   partnerId: joi.number().required(),
   plasticId: joi.number().required(),
   pricePerKilogram: joi.number().required(),
@@ -73,12 +76,9 @@ const acceptanceRule = joi.object({
     .default(AcceptanceRuleStatus.INACTIVE)
     .required(),
   minimumTransactionWeight: joi.number().precision(30).required(),
-  createdAt: joi.date().iso(),
-  updatedAt: joi.date().iso(),
 });
 
 const transaction = joi.object({
-  id: joi.number(),
   partnerId: joi.number().required(),
   collaboratorId: joi.number().required(),
   status: joi
@@ -100,18 +100,18 @@ const transaction = joi.object({
     .required(),
   handoverFee: joi.number().required(),
   transactionTime: joi.date().iso().optional(),
-  createdAt: joi.date().iso(),
-  updatedAt: joi.date().iso(),
 });
 
 const plastic = joi.object({
-  id: joi.number(),
   name: joi.string().min(3).max(16).required(),
 });
 
 module.exports = {
-  credentials,
-  user,
+  updateUser,
+  saveUser,
+  deleteUser,
+  login,
+  resetPassword,
   product,
   productCategory,
   categoryForProduct,

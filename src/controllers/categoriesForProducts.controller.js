@@ -1,6 +1,5 @@
-// const {} = require("@prisma/client");
 const prismaClient = require("../utilities/prismaClient.utility");
-const schemaValidator = require("../utilities/schemaValidator.utility");
+const requestValidators = require("../utilities/requestValidators.utility");
 const validationError = require("../utilities/validationError.utility");
 
 class CategoriesForProductsController {
@@ -44,7 +43,7 @@ class CategoriesForProductsController {
 
   static async save(req, res) {
     try {
-      const validationResult = await schemaValidator.categoryForProduct.validateAsync(req.body, {
+      const validationResult = await requestValidators.categoryForProduct.validateAsync(req.body, {
         stripUnknown: true,
         abortEarly: false,
         errors: {
@@ -80,7 +79,7 @@ class CategoriesForProductsController {
     const { id } = req.params;
 
     try {
-      const validationResult = await schemaValidator.categoryForProduct.validateAsync(req.body, {
+      const validationResult = await requestValidators.categoryForProduct.validateAsync(req.body, {
         stripUnknown: true,
         abortEarly: false,
         errors: {
