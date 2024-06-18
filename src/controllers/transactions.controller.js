@@ -180,6 +180,7 @@ class TransactionsController {
 
       return res.status(500).json({
         error,
+        pub_key: process.env.UPLOADCARE_PUBLIC_KEY,
       });
     }
   }
