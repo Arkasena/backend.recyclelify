@@ -79,8 +79,8 @@ const acceptanceRule = joi.object({
 });
 
 const transaction = joi.object({
-  partnerId: joi.number().required(),
-  collaboratorId: joi.number().required(),
+  sellerId: joi.number().required(),
+  buyerId: joi.number().required(),
   status: joi
     .string()
     .alphanum()
