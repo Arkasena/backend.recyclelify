@@ -89,7 +89,7 @@ const transaction = joi.object({
     .required(),
   note: joi.string().max(256).optional(),
   photo: joi.string().max(256).required(),
-  weight: joi.number().precision(30).required(),
+  weight: joi.number().required(),
   pricePerKilogram: joi.number().required(),
   plasticId: joi.number().required(),
   handover: joi
