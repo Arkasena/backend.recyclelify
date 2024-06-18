@@ -41,7 +41,7 @@ model User {
   description        String?          @db.VarChar(256)
   phoneNumber        String           @map("phone_number") @db.VarChar(16)
   email              String           @unique @db.VarChar(320)
-  password           String           @db.VarChar(32)
+  password           String           @db.VarChar(128)
   address            String           @db.VarChar(128)
   photo              String?          @db.VarChar(256)
   website            String?          @db.VarChar(32)
@@ -57,43 +57,44 @@ model User {
 }
 
 model Product {
-  id                Int               @id @default(autoincrement())
-  partner           User              @relation(fields: [partnerId], references: [id])
-  partnerId         Int               @map("partner_id")
-  name              String            @db.VarChar(32)
-  description       String            @db.VarChar(256)
-  price             Int
-  photo             String            @db.VarChar(256)
-  link              String            @db.VarChar(256)
-  createdAt         DateTime          @default(now()) @map("created_at")
-  updatedAt         DateTime          @updatedAt @map("updated_at")
-  productCategories ProductCategory[]
+  id          Int               @id @default(autoincrement())
+  partner     User              @relation(fields: [partnerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  partnerId   Int               @map("partner_id")
+  name        String            @db.VarChar(32)
+  description String            @db.VarChar(256)
+  price       Int
+  photo       String?           @db.VarChar(256)
+  link        String            @db.VarChar(256)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+  categories  ProductCategory[]
 
   @@map("products")
 }
 
 model ProductCategory {
-  product    Product            @relation(fields: [productId], references: [id])
+  id         Int                @id @default(autoincrement())
+  product    Product            @relation(fields: [productId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   productId  Int                @map("product_id")
-  category   CategoryForProduct @relation(fields: [categoryId], references: [id])
+  category   CategoryForProduct @relation(fields: [categoryId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   categoryId Int                @map("category_id")
 
-  @@id([productId, categoryId])
   @@map("products_categories")
 }
 
 model CategoryForProduct {
-  id              Int               @id @default(autoincrement())
-  name            String            @unique @db.VarChar(32)
-  productCategory ProductCategory[]
+  id       Int               @id @default(autoincrement())
+  name     String            @unique @db.VarChar(32)
+  products ProductCategory[]
 
   @@map("categories_for_products")
 }
 
 model AcceptanceRule {
-  partner                  User                 @relation(fields: [partnerId], references: [id])
+  id                       Int                  @id @default(autoincrement())
+  partner                  User                 @relation(fields: [partnerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   partnerId                Int                  @map("partner_id")
-  plastic                  Plastic              @relation(fields: [plasticId], references: [id])
+  plastic                  Plastic              @relation(fields: [plasticId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   plasticId                Int                  @map("plastic_id")
   pricePerKilogram         Int                  @map("price_per_kilogram")
   status                   AcceptanceRuleStatus @default(INACTIVE)
@@ -101,22 +102,21 @@ model AcceptanceRule {
   createdAt                DateTime             @default(now()) @map("created_at")
   updatedAt                DateTime             @updatedAt @map("updated_at")
 
-  @@id([partnerId, plasticId])
   @@map("acceptance_rules")
 }
 
 model Transaction {
   id               Int                 @id @default(autoincrement())
-  seller           User                @relation("transaction_seller", fields: [sellerId], references: [id])
+  seller           User                @relation("transaction_seller", fields: [sellerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   sellerId         Int                 @map("seller_id")
-  buyer            User                @relation("transaction_buyer", fields: [buyerId], references: [id])
+  buyer            User                @relation("transaction_buyer", fields: [buyerId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   buyerId          Int                 @map("buyer_id")
   status           TransactionStatus   @default(SUBMITTED)
   note             String?             @db.VarChar(256)
-  photo            String              @db.VarChar(256)
-  weight           Decimal
+  photo            String?             @db.VarChar(256)
+  weight           Int
   pricePerKilogram Int                 @map("price_per_kilogram")
-  plastic          Plastic             @relation(fields: [plasticId], references: [id])
+  plastic          Plastic             @relation(fields: [plasticId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   plasticId        Int                 @map("plastic_id")
   handover         TransactionHandover @default(SELFDELIVERY)
   handoverFee      Int                 @default(0) @map("handover_fee")

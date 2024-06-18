@@ -1,5 +1,5 @@
 const express = require("express");
-const resource = require("../utilities/resource.utility");
+const auth = require("../middlewares/auth.middleware");
 const UsersController = require("../controllers/users.controller");
 const ProductsController = require("../controllers/products.controller");
 const ProductsCategoriesController = require("../controllers/productsCategories.controller");
@@ -7,15 +7,54 @@ const CategoriesForProductsController = require("../controllers/categoriesForPro
 const AcceptanceRulesController = require("../controllers/acceptanceRules.controller");
 const TransactionsController = require("../controllers/transactions.controller");
 const PlasticsController = require("../controllers/plastics.controller");
+const StatisticController = require("../controllers/statistic.controller")
 
 const api = express.Router();
 
-api.use("/users", resource(UsersController));
-api.use("/products", resource(ProductsController));
-api.use("/products-categories", resource(ProductsCategoriesController));
-api.use("/categories-for-products", resource(CategoriesForProductsController));
-api.use("/acceptance-rules", resource(AcceptanceRulesController));
-api.use("/transactions", resource(TransactionsController));
-api.use("/plastics", resource(PlasticsController));
+api.get("/users", UsersController.index);
+api.get("/users/:id", UsersController.show);
+api.post("/users", UsersController.save);
+api.put("/users/:id", auth, UsersController.update);
+api.delete("/users/:id", auth, UsersController.delete);
+api.post("/login", UsersController.login);
+api.post("/reset-password/:id", auth, UsersController.resetPassword);
+
+api.get("/products", ProductsController.index);
+api.get("/products/:id", ProductsController.show);
+api.post("/products", auth, ProductsController.save);
+api.put("/products/:id", auth, ProductsController.update);
+api.delete("/products/:id", auth, ProductsController.delete);
+
+api.get("/products-categories", ProductsCategoriesController.index);
+api.get("/products-categories/:id", ProductsCategoriesController.show);
+api.post("/products-categories", auth, ProductsCategoriesController.save);
+api.put("/products-categories/:id", auth, ProductsCategoriesController.update);
+api.delete("/products-categories/:id", auth, ProductsCategoriesController.delete);
+
+api.get("/categories-for-products", CategoriesForProductsController.index);
+api.get("/categories-for-products/:id", CategoriesForProductsController.show);
+api.post("/categories-for-products", auth, CategoriesForProductsController.save);
+api.put("/categories-for-products/:id", auth, CategoriesForProductsController.update);
+api.delete("/categories-for-products/:id", auth, CategoriesForProductsController.delete);
+
+api.get("/acceptance-rules", AcceptanceRulesController.index);
+api.get("/acceptance-rules/:id", AcceptanceRulesController.show);
+api.post("/acceptance-rules", auth, AcceptanceRulesController.save);
+api.put("/acceptance-rules/:id", auth, AcceptanceRulesController.update);
+api.delete("/acceptance-rules/:id", auth, AcceptanceRulesController.delete);
+
+api.get("/transactions", auth, TransactionsController.index);
+api.get("/transactions/:id", auth, TransactionsController.show);
+api.post("/transactions", auth, TransactionsController.save);
+api.put("/transactions/:id", auth, TransactionsController.update);
+api.delete("/transactions/:id", auth, TransactionsController.delete);
+
+api.get("/plastics", PlasticsController.index);
+api.get("/plastics/:id", PlasticsController.show);
+api.post("/plastics", auth, PlasticsController.save);
+api.put("/plastics/:id", auth, PlasticsController.update);
+api.delete("/plastics/:id", auth, PlasticsController.delete);
+
+api.get("/statistic/:transactionType/:id", auth, StatisticController.index)
 
 module.exports = api;
