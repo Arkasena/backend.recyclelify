@@ -1,10 +1,10 @@
-// const {} = require("@prisma/client");
 const prismaClient = require("../utilities/prismaClient.utility");
-const schemaValidator = require("../utilities/schemaValidator.utility");
+const requestValidators = require("../utilities/requestValidators.utility");
+const validationError = require("../utilities/validationError.utility");
 
 class AcceptanceRulesController {
   static async index(req, res) {
-    const partnerId = parseInt(req.query.partnerId) || undefined;
+    const partnerId = Number(req.query.partnerId) || undefined;
 
     try {
       const acceptanceRules = await prismaClient.acceptanceRule.findMany({
@@ -14,14 +14,12 @@ class AcceptanceRulesController {
       });
 
       return res.json({
-        status: "success",
         data: acceptanceRules,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -38,14 +36,12 @@ class AcceptanceRulesController {
       });
 
       return res.json({
-        status: "success",
         data: acceptanceRule,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -53,21 +49,33 @@ class AcceptanceRulesController {
 
   static async save(req, res) {
     try {
-      const validationResult = await schemaValidator.acceptanceRule.validateAsync(req.body);
+      const validationResult = await requestValidators.acceptanceRule.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
 
       const acceptanceRule = await prismaClient.acceptanceRule.create({
         data: validationResult,
       });
 
       return res.status(201).json({
-        status: "success",
         data: acceptanceRule,
       });
     } catch (error) {
       console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -77,7 +85,15 @@ class AcceptanceRulesController {
     const { id } = req.params;
 
     try {
-      const validationResult = await schemaValidator.acceptanceRule.validateAsync(req.body);
+      const validationResult = await requestValidators.acceptanceRule.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
 
       const acceptanceRule = await prismaClient.acceptanceRule.update({
         where: {
@@ -87,14 +103,18 @@ class AcceptanceRulesController {
       });
 
       return res.json({
-        status: "success",
         data: acceptanceRule,
       });
     } catch (error) {
       console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -111,14 +131,12 @@ class AcceptanceRulesController {
       });
 
       return res.json({
-        status: "success",
         data: acceptanceRule,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }

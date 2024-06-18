@@ -1,6 +1,6 @@
-// const {} = require("@prisma/client");
 const prismaClient = require("../utilities/prismaClient.utility");
-const schemaValidator = require("../utilities/schemaValidator.utility");
+const requestValidators = require("../utilities/requestValidators.utility");
+const validationError = require("../utilities/validationError.utility");
 
 class PlasticsController {
   static async index(req, res) {
@@ -8,14 +8,12 @@ class PlasticsController {
       const plastics = await prismaClient.plastic.findMany();
 
       return res.json({
-        status: "success",
         data: plastics,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -32,14 +30,12 @@ class PlasticsController {
       });
 
       return res.json({
-        status: "success",
         data: plastic,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -47,21 +43,33 @@ class PlasticsController {
 
   static async save(req, res) {
     try {
-      const validationResult = await schemaValidator.plastic.validateAsync(req.body);
+      const validationResult = await requestValidators.plastic.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
 
       const plastic = await prismaClient.plastic.create({
         data: validationResult,
       });
 
       return res.status(201).json({
-        status: "success",
         data: plastic,
       });
     } catch (error) {
       console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -71,7 +79,15 @@ class PlasticsController {
     const { id } = req.params;
 
     try {
-      const validationResult = await schemaValidator.plastic.validateAsync(req.body);
+      const validationResult = await requestValidators.plastic.validateAsync(req.body, {
+        stripUnknown: true,
+        abortEarly: false,
+        errors: {
+          wrap: {
+            label: false,
+          },
+        },
+      });
 
       const plastic = await prismaClient.plastic.update({
         where: {
@@ -81,14 +97,18 @@ class PlasticsController {
       });
 
       return res.json({
-        status: "success",
         data: plastic,
       });
     } catch (error) {
       console.error(error);
+
+      if (error?.details) {
+        return res.status(400).json({
+          error: validationError(error.details),
+        });
+      }
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
@@ -105,14 +125,12 @@ class PlasticsController {
       });
 
       return res.json({
-        status: "success",
         data: plastic,
       });
     } catch (error) {
       console.error(error);
+
       return res.status(500).json({
-        status: "error",
-        data: null,
         error,
       });
     }
