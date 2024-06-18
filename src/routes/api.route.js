@@ -55,6 +55,6 @@ api.post("/plastics", auth, PlasticsController.save);
 api.put("/plastics/:id", auth, PlasticsController.update);
 api.delete("/plastics/:id", auth, PlasticsController.delete);
 
-api.get("/statistic/:transactionType/:id", StatisticController.index)
+api.get("/statistic/:transactionType/:id", auth, StatisticController.index)
 
 module.exports = api;
