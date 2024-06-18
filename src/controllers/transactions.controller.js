@@ -170,7 +170,30 @@ class TransactionsController {
         },
       });
 
-      const transaction = await prismaClient.transaction.update({
+      const transaction = await prismaClient.transaction.findUnique({
+        where: {
+          id: Number(id),
+        },
+        select: {
+          transactionTime: true,
+        },
+      });
+
+      if (validationResult.status === TransactionStatus.PROCESSED) {
+        if (transaction.transactionTime === null) {
+          validationResult.transactionTime = new Date();
+        } else {
+          const currentDate = new Date();
+          const differentTime = currentDate - transaction.transactionTime;
+          const maximumTransactionTime = 3 * 24 * 60 * 60 * 1000;
+
+          if (differentTime > maximumTransactionTime) {
+            validationResult.status = TransactionStatus.FAILED;
+          }
+        }
+      }
+
+      const updatedTransaction = await prismaClient.transaction.update({
         where: {
           id: Number(id),
         },
@@ -178,7 +201,7 @@ class TransactionsController {
       });
 
       return res.json({
-        data: transaction,
+        data: updatedTransaction,
       });
     } catch (error) {
       console.error(error);
