@@ -8,12 +8,17 @@ class ProductsController {
     const limit = Number(req.query.limit) || 9;
     const index = (page - 1) * limit;
     const partnerId = Number(req.query.partnerId) || undefined;
+    const name = req.query.name || undefined;
     const relations = req.query.relations || [];
 
     try {
       const total = await prismaClient.product.count({
         where: {
           partnerId: partnerId,
+          name: {
+            contains: name,
+            mode: "insensitive",
+          },
         },
       });
 
@@ -22,6 +27,10 @@ class ProductsController {
         take: limit,
         where: {
           partnerId: partnerId,
+          name: {
+            contains: name,
+            mode: "insensitive",
+          },
         },
         include: {
           partner: relations.includes("partner")
