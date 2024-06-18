@@ -1,6 +1,6 @@
 const { TransactionStatus } = require("@prisma/client");
 const prismaClient = require("../utilities/prismaClient.utility");
-const schemaValidator = require("../utilities/schemaValidator.utility");
+const requestValidators = require("../utilities/requestValidators.utility");
 const validationError = require("../utilities/validationError.utility");
 
 class TransactionsController {
@@ -124,7 +124,7 @@ class TransactionsController {
 
   static async save(req, res) {
     try {
-      const validationResult = await schemaValidator.transaction.validateAsync(req.body, {
+      const validationResult = await requestValidators.transaction.validateAsync(req.body, {
         stripUnknown: true,
         abortEarly: false,
         errors: {
@@ -160,7 +160,7 @@ class TransactionsController {
     const { id } = req.params;
 
     try {
-      const validationResult = await schemaValidator.transaction.validateAsync(req.body, {
+      const validationResult = await requestValidators.transaction.validateAsync(req.body, {
         stripUnknown: true,
         abortEarly: false,
         errors: {
