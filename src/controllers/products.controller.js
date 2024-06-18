@@ -9,6 +9,8 @@ class ProductsController {
     const index = (page - 1) * limit;
     const partnerId = Number(req.query.partnerId) || undefined;
     const name = req.query.name || undefined;
+    const nameOrder = req.query.nameOrder || undefined;
+    const category = req.query.category || undefined;
     const relations = req.query.relations || [];
 
     try {
@@ -18,6 +20,13 @@ class ProductsController {
           name: {
             contains: name,
             mode: "insensitive",
+          },
+          categories: {
+            some: {
+              category: {
+                name: category,
+              },
+            },
           },
         },
       });
@@ -31,6 +40,16 @@ class ProductsController {
             contains: name,
             mode: "insensitive",
           },
+          categories: {
+            some: {
+              category: {
+                name: category,
+              },
+            },
+          },
+        },
+        orderBy: {
+          name: nameOrder,
         },
         include: {
           partner: relations.includes("partner")
