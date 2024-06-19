@@ -25,3 +25,6 @@
 6. There are 2 commands to run the program:
     - `npm start`: for the **Production** phase
     - `npm run dev`: for the **Development** phase
+
+For application guidelines, refer to this document:
+https://docs.google.com/document/d/1ObEXkSjpW8vGStFaUIGuQuNCoUmteij4ZBRhaQEBIqs/edit?usp=sharing
