@@ -39,6 +39,7 @@ class TransactionsController {
                   name: true,
                   address: true,
                   phoneNumber: true,
+                  photo: true,
                 },
               }
             : false,
@@ -49,6 +50,7 @@ class TransactionsController {
                   name: true,
                   address: true,
                   phoneNumber: true,
+                  photo: true,
                 },
               }
             : false,
